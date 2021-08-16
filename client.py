@@ -5,6 +5,7 @@ import socket
 import asn1tools
 import configparser
 import datetime
+from time import sleep
 
 config = configparser.ConfigParser()
 config.read('settings.ini')
@@ -16,32 +17,6 @@ HOST = defconf['PDC_HOST']
 PORT = int(defconf['PDC_PORT'])
 ASN_TYPE_NAME = defconf['PDC_ASN_TYPE_NAME']
 
-'''
-{
-    streamId 0,
-    granularityPeriodEndTime 991231235959+0200,
-    measInfo [
-        {
-        measObjLdn "first",
-        measResults {
-            measId 1,
-            measValue "qwerty"
-        }
-    }
-    ]
-}
-
-{"streamId":0,"granularityPeriodEndTime":"991231235959","measInfo":[{"measObjLdn":"first","measResults":[{"measId":1,"measValue":"qwerty"}]}]}
-
-{
-    "streamId":5,
-    "granularityPeriodEndTime":"991231235959",
-[{"measObjLdn":"first", "measResults":[{"measId":1,"measValue":"qwerty"}, {"measId":2,"measValue":"abacaba"}]},
- {"measObjLdn":"second", "measResults":[{"measId":3,"measValue":"qwerty3"}, {"measId":4,"measValue":"abacaba4"}]}]
-}
-
-{"streamId":5,"granularityPeriodEndTime":datetime.datetime.now(),"measInfo":[{"measObjLdn":"first", "measResults":[{"measId":1,"measValue":"qwerty"}, {"measId":2,"measValue":"abacaba"}]},{"measObjLdn":"second", "measResults":[{"measId":3,"measValue":"qwerty3"}, {"measId":4,"measValue":"abacaba4"}]}]}
-'''
 
 class Client:
 
@@ -53,7 +28,6 @@ class Client:
 
     def run(self):
         print(datetime.datetime.now())
-        #data = eval(input())
         data = [
             {
                 "streamId": 0,
@@ -87,7 +61,7 @@ class Client:
                     }
                 ]
             },
-                        {
+            {
                 "streamId": 5,
                 "granularityPeriodEndTime": datetime.datetime.now(),
                 "measInfo": [
@@ -122,11 +96,14 @@ class Client:
         ]
         payload = self.dat.encode(ASN_TYPE_NAME, data)
         print('Encoded payload: ' + str(payload))
+        print(len(payload))
 
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect((self.HOST, self.PORT))
             input()
-            s.sendall(payload+payload)
+            s.sendall(payload[:10])
+            sleep(2)
+            s.sendall(payload[10:] + payload)
 
 
 

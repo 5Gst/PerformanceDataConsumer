@@ -11,10 +11,6 @@ import configparser
 from datetime import datetime
 import asyncio
 
-'''
-UTCTime - datetime.datetime
-'''
-
 config = configparser.ConfigParser()
 config.read('settings.ini')
 defconf = config['DEFAULT']
@@ -32,7 +28,6 @@ TELEGRAF_ADDRESS = set_variable('PDC_TELEGRAF_ADDRESS')
 HOST = set_variable('PDC_HOST')
 PORT = int(set_variable('PDC_PORT'))
 ASN_TYPE_NAME = set_variable('PDC_ASN_TYPE_NAME')
-LISTEN_SOCKETS_NUM = int(set_variable('PDC_LISTEN_SOCKETS_NUM'))
 BUFFER_SIZE = int(set_variable('PDC_BUFFER_SIZE'))
 
 class Server:
@@ -45,7 +40,7 @@ class Server:
         logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)
         self.logger = logging.getLogger('server')
         try:
-            self.dat = asn1tools.compile_files(SCHEMA_PATH, codec=CODEC_TYPE)   #cache
+            self.dat = asn1tools.compile_files(SCHEMA_PATH, codec=CODEC_TYPE)
         except:
             self.logger.error("Can't compile schema {} for codec {}".format(SCHEMA_PATH, CODEC_TYPE))
             sys.exit(1)
@@ -55,16 +50,18 @@ class Server:
         sys.exit(0)
 
     async def receive_data(self, reader, writer):
-        self.logger.info('Connected to client')
+        client_host, client_port = writer.get_extra_info('peername')
+        client_addr = str(client_host) + ":" + str(client_port)
+        self.logger.info('Connected to client {}'.format(client_addr))
         full_data = bytearray(b'')
         while True:
             data = await reader.read(BUFFER_SIZE)
             full_data += data
-            self.logger.info('Server received: {}'.format(str(full_data)))
+            self.logger.info('Server received {} from {}'.format(str(full_data), client_addr))
             if not data:
                 if full_data != bytearray(b''):
                     self.logger.warning('Decoding failed')
-                self.logger.info('Breaking connection')
+                self.logger.info('Breaking connection with {}'.format(client_addr))
                 break
             while True:
                 try:
@@ -72,7 +69,7 @@ class Server:
                     check_encode = self.dat.encode(ASN_TYPE_NAME, decoded)
                     full_data = full_data[len(check_encode):]   #if data has more information
                     self.logger.info('payload: ' + str(decoded))
-                except Exception as e:
+                except:
                     self.logger.info('Decoding failed')
                     break
                 try:
@@ -82,6 +79,7 @@ class Server:
 
     async def run(self):
         server = await asyncio.start_server(self.receive_data, self.HOST, self.PORT)
+        self.logger.info('Server started at {}:{}'.format(self.HOST, self.PORT))
         async with server:
             await server.serve_forever()
 
