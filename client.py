@@ -6,17 +6,27 @@ import asn1tools
 import configparser
 import datetime
 from time import sleep
+import json
+from dateutil import parser
+import os
 
 config = configparser.ConfigParser()
 config.read('settings.ini')
 defconf = config['DEFAULT']
-SCHEMA_PATH = defconf['PDC_SCHEMA_PATH']
-CODEC_TYPE = defconf['PDC_CODEC_TYPE'].lower()
-TELEGRAF_ADDRESS = defconf['PDC_TELEGRAF_ADDRESS']
-HOST = defconf['PDC_HOST']
-PORT = int(defconf['PDC_PORT'])
-ASN_TYPE_NAME = defconf['PDC_ASN_TYPE_NAME']
 
+def set_variable(name):
+    env_var = os.environ.get(name)
+    if env_var:
+        return env_var
+    else:
+        return defconf[name]
+
+SCHEMA_PATH = set_variable('PDC_SCHEMA_PATH')
+CODEC_TYPE = set_variable('PDC_CODEC_TYPE').lower()
+HOST = set_variable('PDC_HOST')
+PORT = int(set_variable('PDC_PORT'))
+ASN_TYPE_NAME = set_variable('PDC_ASN_TYPE_NAME')
+CLIENT_DATA = set_variable('PDC_CLIENT_DATA_PATH')
 
 class Client:
 
@@ -27,76 +37,12 @@ class Client:
         self.dat = asn1tools.compile_files(SCHEMA_PATH, codec=CODEC_TYPE)
 
     def run(self):
-        print(datetime.datetime.now())
-        data = [
-            {
-                "streamId": 0,
-                "granularityPeriodEndTime": datetime.datetime.now(),
-                "measInfo": [
-                    {
-                        "measObjLdn": "first",
-                        "measResults": [
-                            {
-                                "measId": 1,
-                                "measValue": "a"
-                            },
-                            {
-                                "measId": 2,
-                                "measValue": "b"
-                            }
-                        ]
-                    },
-                    {
-                        "measObjLdn": "second",
-                        "measResults": [
-                            {
-                                "measId": 3,
-                                "measValue": "cd"
-                            },
-                            {
-                                "measId":4,
-                                "measValue": "efg"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "streamId": 5,
-                "granularityPeriodEndTime": datetime.datetime.now(),
-                "measInfo": [
-                    {
-                        "measObjLdn": "third",
-                        "measResults": [
-                            {
-                                "measId": 6,
-                                "measValue": "hjklmno"
-                            },
-                            {
-                                "measId": 7,
-                                "measValue": "pqrstuvwxyz"
-                            }
-                        ]
-                    },
-                    {
-                        "measObjLdn": "fourth",
-                        "measResults": [
-                            {
-                                "measId": 8,
-                                "measValue": "1asd3"
-                            },
-                            {
-                                "measId": 9,
-                                "measValue": "48r3w6e5fs1..../as.d/as.d/as.d````~~~~"
-                            }
-                        ]
-                    }
-                ]
-            },
-        ]
+        with open(CLIENT_DATA) as file:
+            data = json.load(file)
+        for i in range(len(data)):
+            data[i]['granularityPeriodEndTime'] = parser.parse(data[i]['granularityPeriodEndTime'])
         payload = self.dat.encode(ASN_TYPE_NAME, data)
         print('Encoded payload: ' + str(payload))
-        print(len(payload))
 
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect((self.HOST, self.PORT))

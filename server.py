@@ -17,7 +17,7 @@ defconf = config['DEFAULT']
 
 def set_variable(name):
     env_var = os.environ.get(name)
-    if env_var is not None:
+    if env_var:
         return env_var
     else:
         return defconf[name]
@@ -75,7 +75,7 @@ class Server:
                 try:
                     r = requests.post(TELEGRAF_ADDRESS, json=str(decoded))
                 except:
-                    self.logger.error('Receive to telegraf failed')
+                    self.logger.error('Send to telegraf failed')
 
     async def run(self):
         server = await asyncio.start_server(self.receive_data, self.HOST, self.PORT)
