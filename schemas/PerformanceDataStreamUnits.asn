@@ -1,0 +1,24 @@
+-- ASN1START
+PerformanceDataStreamUnits-Schema DEFINITIONS AUTOMATIC TAGS ::=
+BEGIN
+-- PDSUs-START
+
+PDSUs ::= SEQUENCE OF PDSU
+PDSU ::=  SEQUENCE {
+    streamId                   INTEGER,
+    granularityPeriodEndTime   UTCTime,   
+    measInfo                   SEQUENCE OF MeasData
+}
+MeasData ::=  SEQUENCE {
+    measObjLdn     VisibleString,
+    measResults    SEQUENCE OF MeasValuePair
+}
+MeasValuePair ::=  SEQUENCE{
+    measId      INTEGER,
+    measValue   VisibleString
+}
+
+-- PDSUs-STOP
+END
+-- ASN1STOP
+
