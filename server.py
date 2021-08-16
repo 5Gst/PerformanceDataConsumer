@@ -3,6 +3,7 @@
 
 import signal
 import sys
+import os
 import asn1tools
 import logging
 import requests
@@ -14,19 +15,25 @@ import asyncio
 UTCTime - datetime.datetime
 '''
 
-# environment; if not -> config
-# add prefix [PDC]
 config = configparser.ConfigParser()
 config.read('settings.ini')
 defconf = config['DEFAULT']
-SCHEMA_PATH = defconf['SCHEMA_PATH']
-CODEC_TYPE = defconf['CODEC_TYPE'].lower()
-TELEGRAF_ADDRESS = defconf['TELEGRAF_ADDRESS']
-HOST = defconf['HOST']
-PORT = int(defconf['PORT'])
-ASN_TYPE_NAME = defconf['ASN_TYPE_NAME']
-LISTEN_SOCKETS_NUM = int(defconf['LISTEN_SOCKETS_NUM'])
-BUFFER_SIZE = int(defconf['BUFFER_SIZE'])
+
+def set_variable(name):
+    env_var = os.environ.get(name)
+    if env_var is not None:
+        return env_var
+    else:
+        return defconf[name]
+
+SCHEMA_PATH = set_variable('PDC_SCHEMA_PATH')
+CODEC_TYPE = set_variable('PDC_CODEC_TYPE').lower()
+TELEGRAF_ADDRESS = set_variable('PDC_TELEGRAF_ADDRESS')
+HOST = set_variable('PDC_HOST')
+PORT = int(set_variable('PDC_PORT'))
+ASN_TYPE_NAME = set_variable('PDC_ASN_TYPE_NAME')
+LISTEN_SOCKETS_NUM = int(set_variable('PDC_LISTEN_SOCKETS_NUM'))
+BUFFER_SIZE = int(set_variable('PDC_BUFFER_SIZE'))
 
 class Server:
 

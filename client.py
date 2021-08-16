@@ -9,12 +9,12 @@ import datetime
 config = configparser.ConfigParser()
 config.read('settings.ini')
 defconf = config['DEFAULT']
-SCHEMA_PATH = defconf['SCHEMA_PATH']
-CODEC_TYPE = defconf['CODEC_TYPE'].lower()
-TELEGRAF_ADDRESS = defconf['TELEGRAF_ADDRESS']
-HOST = defconf['HOST']
-PORT = int(defconf['PORT'])
-ASN_TYPE_NAME = defconf['ASN_TYPE_NAME']
+SCHEMA_PATH = defconf['PDC_SCHEMA_PATH']
+CODEC_TYPE = defconf['PDC_CODEC_TYPE'].lower()
+TELEGRAF_ADDRESS = defconf['PDC_TELEGRAF_ADDRESS']
+HOST = defconf['PDC_HOST']
+PORT = int(defconf['PDC_PORT'])
+ASN_TYPE_NAME = defconf['PDC_ASN_TYPE_NAME']
 
 '''
 {
