@@ -27,7 +27,8 @@ SCHEMA_PATH = set_variable('PDC_SCHEMA_PATH')
 CODEC_TYPE = set_variable('PDC_CODEC_TYPE').lower()
 TELEGRAF_HOST = set_variable('PDC_TELEGRAF_HOST')
 TELEGRAF_PORT = set_variable('PDC_TELEGRAF_PORT')
-TELEGRAF_ADDRESS = "http://" + TELEGRAF_HOST + ":" + TELEGRAF_PORT + '/telegraf'
+TELEGRAF_ENDPOINT = set_variable('PDC_TELEGRAF_ENDPOINT')
+TELEGRAF_ADDRESS = 'http://' + TELEGRAF_HOST + ':' + TELEGRAF_PORT + TELEGRAF_ENDPOINT
 HOST = set_variable('PDC_HOST')
 PORT = int(set_variable('PDC_PORT'))
 ASN_TYPE_NAME = set_variable('PDC_ASN_TYPE_NAME')
@@ -109,8 +110,6 @@ class Server:
                     self.logger.error('Send to telegraf failed: {}'.format(e))
 
     async def run(self):
-        # sudo docker build . -t server
-        # sudo docker run -p 50007:50007 --env PDC_DEMO_MODE=true server
         server = await asyncio.start_server(self.receive_data, self.HOST, self.PORT)
         self.logger.info('Server started at {}:{}'.format(self.HOST, self.PORT))
         if DEMO:
