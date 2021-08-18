@@ -10,6 +10,7 @@ import requests
 import configparser
 from datetime import datetime
 import asyncio
+import time
 
 config = configparser.ConfigParser()
 config.read('settings.ini')
@@ -24,11 +25,14 @@ def set_variable(name):
 
 SCHEMA_PATH = set_variable('PDC_SCHEMA_PATH')
 CODEC_TYPE = set_variable('PDC_CODEC_TYPE').lower()
-TELEGRAF_ADDRESS = set_variable('PDC_TELEGRAF_ADDRESS')
+TELEGRAF_HOST = set_variable('PDC_TELEGRAF_HOST')
+TELEGRAF_PORT = set_variable('PDC_TELEGRAF_PORT')
+TELEGRAF_ADDRESS = "http://" + TELEGRAF_HOST + ":" + TELEGRAF_PORT + '/telegraf'
 HOST = set_variable('PDC_HOST')
 PORT = int(set_variable('PDC_PORT'))
 ASN_TYPE_NAME = set_variable('PDC_ASN_TYPE_NAME')
 BUFFER_SIZE = int(set_variable('PDC_BUFFER_SIZE'))
+DEMO = set_variable('PDC_DEMO_MODE').lower() in ('true', '1', 't')
 
 class Server:
 
@@ -67,19 +71,50 @@ class Server:
                 try:
                     decoded = self.dat.decode(ASN_TYPE_NAME, full_data)
                     check_encode = self.dat.encode(ASN_TYPE_NAME, decoded)
-                    full_data = full_data[len(check_encode):]   #if data has more information
-                    self.logger.info('payload: ' + str(decoded))
+                    full_data = full_data[len(check_encode):]   # if data has more information
+                    self.logger.info('Payload: ' + str(decoded))
                 except:
                     self.logger.info('Decoding failed')
                     break
                 try:
-                    r = requests.post(TELEGRAF_ADDRESS, json=str(decoded))
-                except:
-                    self.logger.error('Send to telegraf failed')
+                    message = []
+                    if DEMO:
+                        for pdsu in decoded:
+                            for objldn in pdsu['measInfo']:
+                                for meas in objldn['measResults']:
+                                    pdsu_new = {
+                                        'streamId': pdsu['streamId'],
+                                        'granularityPeriodEndTime': int(time.mktime(pdsu['granularityPeriodEndTime'].timetuple())),
+                                        'measObjLdn': objldn['measObjLdn'],
+                                        'measId': meas['measId'],
+                                        'measValue': int(meas['measValue']),
+                                    }
+                                    message.append(pdsu_new)
+                        # In demo mode server sends arrray of metrics in this format: 
+                        # {
+                        #    'streamId': 5,
+                        #    'granularityPeriodEndTime': 1629233240,
+                        #    'measObjLdn': 'third',
+                        #    'measId': 6,
+                        #    'measValue': 4
+                        # }
+                    else:
+                        if ASN_TYPE_NAME == 'PDSUs':    # Convert time in this schema to suitable format for telegraf
+                            for i in range(len(decoded)):
+                                decoded[i]['granularityPeriodEndTime'] = int(time.mktime(decoded[i]['granularityPeriodEndTime'].timetuple()))
+                        message = decoded
+
+                    r = requests.post(TELEGRAF_ADDRESS, json=message)
+                except Exception as e:
+                    self.logger.error('Send to telegraf failed: {}'.format(e))
 
     async def run(self):
+        # sudo docker build . -t server
+        # sudo docker run -p 50007:50007 --env PDC_DEMO_MODE=true server
         server = await asyncio.start_server(self.receive_data, self.HOST, self.PORT)
         self.logger.info('Server started at {}:{}'.format(self.HOST, self.PORT))
+        if DEMO:
+            self.logger.info('Server run in demo mode')
         async with server:
             await server.serve_forever()
 

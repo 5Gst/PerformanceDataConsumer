@@ -46,10 +46,7 @@ class Client:
 
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect((self.HOST, self.PORT))
-            input()
-            s.sendall(payload[:10])
-            sleep(2)
-            s.sendall(payload[10:] + payload)
+            s.sendall(payload)
 
 
 
