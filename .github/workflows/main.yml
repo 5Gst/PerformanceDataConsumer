@@ -5,6 +5,14 @@ on:
     branches: [ main ]
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Lint code
+        uses: fylein/python-pylint-github-action@v1
+        with:
+          args: pylint --rcfile=.pylintrc --exit-zero server.py
+
   build:
     runs-on: ubuntu-latest
     steps:
@@ -43,11 +51,3 @@ jobs:
 
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
-
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Lint code
-        uses: fylein/python-pylint-github-action@v1
-  with:
-    args: pylint --rcfile=.pylintrc --exit-zero server.py
