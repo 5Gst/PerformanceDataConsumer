@@ -54,7 +54,7 @@ class Server:
                 "Can't compile schema {} for codec {}".format(SCHEMA_PATH, CODEC_TYPE))
             sys.exit(1)
 
-    def signal_handler(self, sig, frame):
+    def signal_handler(self, sig, _): # `_` is `frame`
         self.logger.info('Got signal {}. Server Stopped.'.format(sig))
         sys.exit(0)
 
