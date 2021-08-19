@@ -28,7 +28,7 @@ jobs:
           context: ./
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/PerformanceDataConsumer:latest
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/performancedataconsumer:latest
           
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
