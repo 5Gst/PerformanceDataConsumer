@@ -8,6 +8,9 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
+      - name: Check out repo
+        uses: actions/checkout@v2
+
       - name: Lint code
         uses: fylein/python-pylint-github-action@v1
         with:
