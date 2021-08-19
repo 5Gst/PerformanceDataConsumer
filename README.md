@@ -8,8 +8,7 @@ Rules (PER).
 ## Usage
 Start server:
 ```
-docker build . -t server
-docker run -p 50007:50007 server
+sudo docker run -p 50007:50007 fluffka/performancedataconsumer:latest
 ```
 To start server in demo mode add ```--env PDC_DEMO_MODE=true``` to ```docker run``` keys.
 
