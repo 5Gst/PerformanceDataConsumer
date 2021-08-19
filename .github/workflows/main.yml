@@ -27,7 +27,7 @@ jobs:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-buildx
+            ${{ runner.os }}-buildx-
 
       - name: Build and push
         id: docker_build
@@ -43,6 +43,11 @@ jobs:
 
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
-          
-          
-          
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Lint code
+        uses: fylein/python-pylint-github-action@v1
+  with:
+    args: pylint --rcfile=.pylintrc --exit-zero server.py
