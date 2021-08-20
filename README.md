@@ -16,3 +16,7 @@ Send data from json file ```PDC_CLIENT_DATA_PATH```:
 ```
 python3 client.py
 ```
+Send computer metrics in demo mode:
+```
+python3 client_computer_metrics.py
+```
