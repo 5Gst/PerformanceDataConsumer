@@ -2,24 +2,21 @@
 # -*- coding: utf-8 -*-
 
 import socket
-import asn1tools
-import configparser
-import datetime
-from time import sleep
-import json
-from dateutil import parser
 import os
+import configparser
+import json
+import asn1tools
+from dateutil import parser
 
-config = configparser.ConfigParser()
-config.read('settings.ini')
-defconf = config['DEFAULT']
+CONFIG_PARSER = configparser.ConfigParser()
+CONFIG_PARSER.read('settings.ini')
+DEFAULT_CONFIG = CONFIG_PARSER['DEFAULT']
 
 def set_variable(name):
     env_var = os.environ.get(name)
     if env_var:
         return env_var
-    else:
-        return defconf[name]
+    return DEFAULT_CONFIG[name]
 
 SCHEMA_PATH = set_variable('PDC_SCHEMA_PATH')
 CODEC_TYPE = set_variable('PDC_CODEC_TYPE').lower()
