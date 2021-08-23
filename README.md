@@ -8,7 +8,7 @@ Rules (PER).
 ## Usage
 Start server:
 ```
-sudo docker run -p 50007:50007 --env PDC_TELEGRAF_HOST=<telegraf_address> fluffka/performancedataconsumer:latest
+docker-compose -f docker-compose.yml -p monitoring up -d --force-recreate
 ```
 Send data from json file ```PDC_CLIENT_DATA_PATH```:
 ```
