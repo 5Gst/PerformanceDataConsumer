@@ -1,6 +1,3 @@
-# docker-compose -f docker-compose.yml -p monitoring up -d --force-recreate
-# docker-compose -p monitoring down
-
 version: "3.9"
 services:
   influxdb:
@@ -31,7 +28,9 @@ services:
       - influxdb
     volumes:
       - ./monitoring/data/grafana:/var/lib/grafana
-      - ./monitoring/data/grafana:/etc/grafana/provisioning/datasources
+      - ./monitoring/data/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./monitoring/data/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/data/grafana/dashboards:/etc/grafana/dashboards
     user: "104"
 
   telegraf:

@@ -10,6 +10,10 @@ Start server:
 ```
 docker-compose -f docker-compose.yml -p monitoring up -d --force-recreate
 ```
+Stop server:
+```
+docker-compose -p monitoring down
+```
 Send data from json file ```PDC_CLIENT_DATA_PATH```:
 ```
 python3 client_file_metrics.py
