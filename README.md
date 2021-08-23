@@ -8,11 +8,13 @@ Rules (PER).
 ## Usage
 Start server:
 ```
-sudo docker run -p 50007:50007 fluffka/performancedataconsumer:latest
+sudo docker run -p 50007:50007 --env PDC_TELEGRAF_HOST=<telegraf_address> fluffka/performancedataconsumer:latest
 ```
-To start server in demo mode add ```--env PDC_DEMO_MODE=true``` to ```docker run``` keys.
-
 Send data from json file ```PDC_CLIENT_DATA_PATH```:
 ```
-python3 client.py
+python3 client_file_metrics.py
+```
+Send computer metrics:
+```
+python3 client_computer_metrics.py
 ```
