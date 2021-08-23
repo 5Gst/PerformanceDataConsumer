@@ -6,9 +6,17 @@ Transfer syntax for Performance Data Stream Units is derived from their ASN.1 de
 Rules (PER).
 
 ## Usage
+Initially set grafana's directory user:
+```
+sudo chown -R 104:104 monitoring/data/grafana
+```
 Start server:
 ```
-sudo docker run -p 50007:50007 --env PDC_TELEGRAF_HOST=<telegraf_address> fluffka/performancedataconsumer:latest
+docker-compose -f docker-compose.yml -p monitoring up -d --force-recreate
+```
+Stop server:
+```
+docker-compose -p monitoring down
 ```
 Send data from json file ```PDC_CLIENT_DATA_PATH```:
 ```
@@ -18,3 +26,8 @@ Send computer metrics:
 ```
 python3 client_computer_metrics.py
 ```
+To send computer metrics to preset dashboards, set environmet variable PDC_STREAM_ID to 0:
+```
+export PDC_STREAM_ID=0
+```
+Or you can edit dashboards: change equality with streamId: "streamId"=<'your streamId'>
