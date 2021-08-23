@@ -44,7 +44,7 @@ class Client:
     def run(self):
         data = [
             {
-                "streamId": randint(1, 100000000000),
+                "streamId": randint(1, 1000000),
                 "granularityPeriodEndTime": str(datetime.datetime.now()),
                 "measInfo": [
                     {
