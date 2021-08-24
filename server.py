@@ -11,7 +11,6 @@ import logging
 import asn1tools
 import requests
 
-
 CONFIG_PARSER = configparser.ConfigParser()
 CONFIG_PARSER.read('settings.ini')
 DEFAULT_CONFIG = CONFIG_PARSER['DEFAULT']
@@ -27,12 +26,11 @@ CODEC_TYPE = set_variable('PDC_CODEC_TYPE').lower()
 TELEGRAF_HOST = set_variable('PDC_TELEGRAF_HOST')
 TELEGRAF_PORT = set_variable('PDC_TELEGRAF_PORT')
 TELEGRAF_ENDPOINT = set_variable('PDC_TELEGRAF_ENDPOINT')
-TELEGRAF_ADDRESS = 'http://' + TELEGRAF_HOST + ':' + TELEGRAF_PORT + TELEGRAF_ENDPOINT
+TELEGRAF_ADDRESS = TELEGRAF_HOST + ':' + TELEGRAF_PORT + TELEGRAF_ENDPOINT
 SERVER_HOST = set_variable('PDC_HOST')
 SERVER_PORT = int(set_variable('PDC_PORT'))
 ASN_TYPE_NAME = set_variable('PDC_ASN_TYPE_NAME')
 BUFFER_SIZE = int(set_variable('PDC_BUFFER_SIZE'))
-DEMO = set_variable('PDC_DEMO_MODE').lower() in ('true', '1', 't')
 
 class Server:
 
@@ -40,7 +38,6 @@ class Server:
         signal.signal(signal.SIGINT, self.signal_handler)
         self.host = SERVER_HOST
         self.port = SERVER_PORT
-
         logging.basicConfig(
             format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
             level=logging.DEBUG)
@@ -82,43 +79,13 @@ class Server:
                     self.logger.info('Decoding failed')
                     break
                 try:
-                    message = []
-                    if DEMO:
-                        for pdsu in decoded:
-                            for objldn in pdsu['measInfo']:
-                                for meas in objldn['measResults']:
-                                    pdsu_new = {
-                                        'streamId': pdsu['streamId'],
-                                        'granularityPeriodEndTime': \
-                                            int(time.mktime( \
-                                                pdsu['granularityPeriodEndTime'].timetuple())),
-                                        'measObjLdn': objldn['measObjLdn'],
-                                        'measId': meas['measId'],
-                                        'measValue': float(meas['measValue']),
-                                    }
-                                    message.append(pdsu_new)
-                        # In demo mode server sends arrray of metrics in this format:
-                        # {
-                        #    'streamId': 5,
-                        #    'granularityPeriodEndTime': 1629233240,
-                        #    'measObjLdn': 'third',
-                        #    'measId': 6,
-                        #    'measValue': 4
-                        # }
-                    else:
-                        # Convert time in this schema to suitable format for telegraf
-                        if ASN_TYPE_NAME == 'PDSUs':
-                            for i in range(len(decoded)):
-                                decoded[i]['granularityPeriodEndTime'] = \
-                                    int(time.mktime( \
-                                        decoded[i]['granularityPeriodEndTime'].timetuple()))
-                                for j in range(len(decoded[i]['measInfo'])):
-                                    for k in range(len(decoded[i]['measInfo'][j]['measResults'])):
-                                        decoded[i]['measInfo'][j]['measResults'][k]['measValue'] = \
-                                            int(decoded[i]['measInfo'][j] \
-                                                ['measResults'][k]['measValue'])
-                        message = decoded
-
+                    # Convert time in this schema to suitable format for telegraf
+                    if ASN_TYPE_NAME == 'PDSUs':
+                        for i in range(len(decoded)):
+                            decoded[i]['granularityPeriodEndTime'] = \
+                                int(time.mktime( \
+                                    decoded[i]['granularityPeriodEndTime'].timetuple()))
+                    message = {ASN_TYPE_NAME: decoded}
                     requests.post(TELEGRAF_ADDRESS, json=message)
                 except Exception as exc:
                     self.logger.error('Send to telegraf failed: {}'.format(exc))
@@ -126,8 +93,6 @@ class Server:
     async def run(self):
         server = await asyncio.start_server(self.receive_data, self.host, self.port)
         self.logger.info('Server started at {}:{}'.format(self.host, self.port))
-        if DEMO:
-            self.logger.info('Server run in demo mode')
         async with server:
             await server.serve_forever()
 

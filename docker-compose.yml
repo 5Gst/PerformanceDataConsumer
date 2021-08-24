@@ -1,0 +1,66 @@
+version: "3.9"
+services:
+  influxdb:
+    image: influxdb:1.8
+    container_name: influxdb
+    restart: always
+    ports:
+      - "8083:8083"
+      - "8086:8086"
+      - "8090:8090"
+    volumes:
+      - ./monitoring/data/influxdb:/var/lib/influxdb
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8086/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  grafana:
+    image: grafana/grafana:8.0.4
+    container_name: grafana
+    restart: always
+    depends_on:
+      - influxdb
+    ports:
+      - "3000:3000"
+    links:
+      - influxdb
+    volumes:
+      - ./monitoring/data/grafana:/var/lib/grafana
+      - ./monitoring/data/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./monitoring/data/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/data/grafana/dashboards:/etc/grafana/dashboards
+    user: "104"
+
+  telegraf:
+    image: telegraf:1.19.2
+    container_name: telegraf
+    restart: always
+    privileged: true
+    ports:
+      - "8186:8186"
+      - "8187:8187"
+    environment:
+      HOST_PROC: /rootfs/proc
+      HOST_SYS: /rootfs/sys
+      HOST_ETC: /rootfs/etc
+    links:
+      - influxdb
+    volumes:
+      - ./monitoring/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /sys:/rootfs/sys:ro
+      - /proc:/rootfs/proc:ro
+      - /etc:/rootfs/etc:ro
+
+  performancedataconsumer:
+    image: fluffka/performancedataconsumer:latest
+    container_name: performancedataconsumer
+    restart: always
+    ports:
+      - "50007:50007"
+    environment:
+      - PDC_TELEGRAF_HOST=telegraf
+    links:
+      - telegraf

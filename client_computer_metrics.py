@@ -28,6 +28,9 @@ HOST = set_variable('PDC_HOST')
 PORT = int(set_variable('PDC_PORT'))
 ASN_TYPE_NAME = set_variable('PDC_ASN_TYPE_NAME')
 CLIENT_DATA = set_variable('PDC_CLIENT_DATA_PATH')
+STREAM_ID = int(set_variable('PDC_STREAM_ID'))
+if STREAM_ID == -1:
+    STREAM_ID = randint(1, 100000)
 
 class Client:
 
@@ -44,7 +47,7 @@ class Client:
     def run(self):
         data = [
             {
-                "streamId": randint(1, 100000000000),
+                "streamId": STREAM_ID,
                 "granularityPeriodEndTime": str(datetime.datetime.now()),
                 "measInfo": [
                     {
