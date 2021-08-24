@@ -55,7 +55,7 @@ services:
       - /etc:/rootfs/etc:ro
 
   performancedataconsumer:
-    image: fluffka/performancedataconsumer:latest
+    image: ${DOCKER_HUB_USERNAME}/performancedataconsumer:latest
     container_name: performancedataconsumer
     restart: always
     ports:
