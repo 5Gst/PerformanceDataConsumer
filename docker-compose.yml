@@ -54,9 +54,9 @@ services:
       - /proc:/rootfs/proc:ro
       - /etc:/rootfs/etc:ro
 
-  server:
+  performancedataconsumer:
     image: fluffka/performancedataconsumer:latest
-    container_name: server
+    container_name: performancedataconsumer
     restart: always
     ports:
       - "50007:50007"
