@@ -72,8 +72,14 @@ class Server:
             while True:
                 try:
                     decoded = self.dat.decode(ASN_TYPE_NAME, full_data)
+                    # Function self.dat.decode decodes prefix of `full_data`
+                    # that contains message corresponding to schema
+                    # If some messages was in full_data, function would ignore
+                    # messages after first one.
+                    # `check_encode` is made to find `full_data` tail after first
+                    # message to not to leave other messages in `full_data`.
                     check_encode = self.dat.encode(ASN_TYPE_NAME, decoded)
-                    full_data = full_data[len(check_encode):]   # if data has more information
+                    full_data = full_data[len(check_encode):]
                     self.logger.info('Payload: ' + str(decoded))
                 except:
                     self.logger.info('Decoding failed')
